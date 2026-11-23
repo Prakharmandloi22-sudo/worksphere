@@ -41,3 +41,4 @@ class OrganizationWorkloadResponse(BaseModel):
     organization_id: str
     members: List[WorkloadMemberSummary]
     unassigned_tasks_count: int
+

@@ -83,3 +83,4 @@ def compute_health_score(
         risk = "critical"
 
     return score, risk
+

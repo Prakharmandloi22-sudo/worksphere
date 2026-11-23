@@ -78,3 +78,4 @@ describe('Assessment 08: Third-Party Integrations & Secure Webhooks', () => {
     expect(res.body.error.message).toContain('replay protection');
   });
 });
+

@@ -8,3 +8,4 @@ class Settings(BaseModel):
     m2m_api_key: str = os.getenv("ANALYTICS_SERVICE_API_KEY", "m2m-service-token-worksphere-analytics-2026")
 
 settings = Settings()
+

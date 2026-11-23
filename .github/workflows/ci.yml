@@ -104,3 +104,4 @@ jobs:
           context: ./services/analytics-service
           file: ./services/analytics-service/Dockerfile
           push: false
+

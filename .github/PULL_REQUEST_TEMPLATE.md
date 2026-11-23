@@ -30,3 +30,4 @@
 - [ ] Vitest / Pytest results attached or verified
 - [ ] No secrets or real credentials committed
 - [ ] Stack traces suppressed from client error responses
+

@@ -88,3 +88,4 @@ class StreamActivityProcessor:
             health_score=health_score,
             risk_level=risk_level,
         )
+

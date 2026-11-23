@@ -45,3 +45,4 @@ describe('Assessment 07: Real-Time Updates, Job Retries, and Idempotency', () =>
     expect(failedJob?.error).toContain('Unrecoverable third-party outage');
   });
 });
+

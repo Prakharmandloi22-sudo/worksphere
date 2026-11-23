@@ -88,3 +88,4 @@ During marketing campaigns, concurrent read traffic spikes caused pool exhaustio
   1. Configured `DB_POOL_MIN=2`, `DB_POOL_MAX=20`, and `statement_timeout = 5000ms`.
   2. Added composite B-Tree indexes on `(organization_id, status)` and `(organization_id, project_id)`.
   3. Integrated Prometheus `/metrics` endpoint to monitor pool utilization and trigger automated alerts at 80% saturation.
+

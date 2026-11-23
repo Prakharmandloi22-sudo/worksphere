@@ -32,3 +32,4 @@ class OrganizationAnalyticsSummary(BaseModel):
     metrics: ProductivityMetrics
     health_score: float  # 0 to 100
     risk_level: str  # 'low', 'medium', 'high', 'critical'
+

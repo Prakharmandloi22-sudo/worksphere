@@ -25,3 +25,4 @@ async def verify_m2m_token(
             detail="Unauthorized machine-to-machine request. Invalid or missing API key."
         )
     return True
+

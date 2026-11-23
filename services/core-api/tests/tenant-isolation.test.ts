@@ -107,3 +107,4 @@ describe('Assessment 04: Multi-Tenant Isolation & RBAC Enforcement', () => {
     expect(forbiddenInvite.body.error.code).toBe('FORBIDDEN_INSUFFICIENT_PERMISSIONS');
   });
 });
+

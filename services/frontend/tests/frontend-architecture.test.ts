@@ -30,3 +30,4 @@ describe('Assessment 01: Next.js Frontend Architecture & Role Layouts', () => {
     expect(resolvedState.version).toBe(2);
   });
 });
+

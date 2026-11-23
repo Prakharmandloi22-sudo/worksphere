@@ -37,3 +37,4 @@ psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT 
 psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT count(*) AS total_tasks FROM tasks;"
 
 echo "[WorkSphere Restore] Database verified and restored successfully!"
+

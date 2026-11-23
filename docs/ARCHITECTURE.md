@@ -125,3 +125,4 @@ WorkSphere enforces tenant security at the HTTP middleware and database query la
 2. **Session Verification**: The user's active memberships are checked against the requested organization. Platform admins can optionally access across tenants.
 3. **Defense in Depth**: Every SQL query and repository method incorporates `WHERE organization_id = $tenantId`. A user from Organization A cannot view, query, or mutate records in Organization B (returns `403 Forbidden`).
 4. **Automated Verification**: Verified by automated test suite `tests/tenant-isolation.test.ts`.
+

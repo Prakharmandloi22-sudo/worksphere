@@ -51,3 +51,4 @@ export const config = {
     from: process.env.EMAIL_FROM || 'notifications@worksphere.io',
   },
 };
+

@@ -49,3 +49,4 @@ def generate_streaming_csv(summary: OrganizationAnalyticsSummary) -> Iterator[st
 def generate_streaming_json(summary: OrganizationAnalyticsSummary) -> str:
     """Serializes summary to indented JSON string."""
     return summary.model_dump_json(indent=2)
+

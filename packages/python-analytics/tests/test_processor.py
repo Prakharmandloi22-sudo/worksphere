@@ -101,3 +101,4 @@ def test_csv_and_json_reporters():
 
     json_str = generate_streaming_json(summary)
     assert f'"organization_id": "{org_id}"' in json_str
+

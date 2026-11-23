@@ -143,3 +143,4 @@ npm run drill
 ## ⚖️ Responsible Use & Compliance Notice
 
 This platform was developed as an educational advanced engineering capstone project for Orion LMS. Use synthetic data and sandbox credentials for testing. Real-world enterprise deployment requires domain-specific compliance (SOC 2, GDPR, HIPAA) and cryptographic review.
+

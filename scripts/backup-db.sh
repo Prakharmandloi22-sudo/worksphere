@@ -32,3 +32,4 @@ echo "[WorkSphere Backup] Checksum: $(cat ${CHECKSUM_FILE})"
 # Apply retention policy: remove backups older than 7 days
 find "${BACKUP_DIR}" -name "worksphere_*.sql.gz*" -mtime +7 -exec rm -f {} +
 echo "[WorkSphere Backup] Retention policy applied (purged >7 days old backups)."
+

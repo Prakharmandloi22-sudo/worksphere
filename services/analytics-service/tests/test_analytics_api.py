@@ -71,3 +71,4 @@ def test_organization_workload_endpoint():
     overloaded_members = [m for m in data["members"] if m["is_overloaded"]]
     assert len(overloaded_members) == 1
     assert overloaded_members[0]["user_id"] == "usr_bob_102"
+

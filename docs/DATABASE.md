@@ -130,3 +130,4 @@ Instead of overwriting previous states without an audit trail, WorkSphere mainta
 | `activity_logs` | `(organization_id, created_at DESC)` | Composite B-Tree | Activity timeline pagination for tenant audit stream. |
 | `idempotency_keys` | `(scope, key)` | Composite Unique | Instant check for duplicate API requests and background jobs. |
 | `refresh_tokens` | `(token_family)` | B-Tree | Instant family revocation upon refresh token reuse detection. |
+

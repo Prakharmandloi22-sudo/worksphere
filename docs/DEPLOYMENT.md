@@ -96,3 +96,4 @@ docker compose start core-api
 - **Core API Readiness**: `GET /health/ready` (validates database pool and Redis connection)
 - **FastAPI Liveness**: `GET /health/live`
 - **Prometheus Metrics**: `GET /metrics` (exposes heap memory, RSS, and process uptime)
+

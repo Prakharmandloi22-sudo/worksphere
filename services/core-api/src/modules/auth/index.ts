@@ -289,3 +289,4 @@ authRouter.get('/me', authenticateToken, async (req: Request, res: Response, nex
     next(err);
   }
 });
+

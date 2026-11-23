@@ -78,3 +78,4 @@ def run_benchmark(num_events: int = 20_000):
 
 if __name__ == "__main__":
     run_benchmark(20_000)
+
