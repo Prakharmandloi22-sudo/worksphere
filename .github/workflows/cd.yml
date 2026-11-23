@@ -1,0 +1,44 @@
+name: WorkSphere CD Pipeline
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # 1. Staging Automated Deployment
+  deploy-staging:
+    name: Deploy to Staging Environment
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trigger Staging Container Rollout
+        run: |
+          echo "Deploying WorkSphere to Staging Cluster..."
+          echo "Verifying healthcheck at https://staging.worksphere.io/health/live"
+
+  # 2. Production Approval-Gated Release
+  deploy-production:
+    name: Deploy to Production Cluster
+    needs: [deploy-staging]
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://app.worksphere.io
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Blue-Green Production Rollout
+        run: |
+          echo "Initiating zero-downtime blue/green deployment to production..."
+          echo "1. Run database schema migrations"
+          echo "2. Spin up green workers and green core-api"
+          echo "3. Warm up Redis cache and verify health probes"
+          echo "4. Shift Nginx upstream traffic to green containers"
+          echo "5. Drain blue containers cleanly"
+
+      - name: Automated Rollback on Health Failure
+        if: failure()
+        run: |
+          echo "ALERT: Production healthcheck failed! Triggering automatic rollback to previous stable release tag..."

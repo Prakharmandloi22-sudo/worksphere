@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "worksphere-analytics"
+version = "1.0.0"
+description = "High-performance streaming task-activity and productivity processor for WorkSphere"
+authors = [{ name = "WorkSphere Data Engineering" }]
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0.0",
+    "pytest>=7.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov"
+]

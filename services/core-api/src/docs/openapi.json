@@ -1,0 +1,202 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "WorkSphere Core Business REST API",
+    "version": "1.0.0",
+    "description": "Multi-tenant project management, task tracking, workflow automation, and optimistic concurrency control API for WorkSphere.",
+    "contact": {
+      "name": "WorkSphere Engineering Team",
+      "email": "api@worksphere.io"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4000/api/v1",
+      "description": "Local development environment"
+    },
+    {
+      "url": "https://api.worksphere.io/api/v1",
+      "description": "Production environment"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Pass JWT access token in the Authorization header: `Bearer <token>`"
+      },
+      "TenantHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Organization-Id",
+        "description": "Tenant organization UUID context"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string", "example": "CONCURRENCY_CONFLICT" },
+              "message": { "type": "string", "example": "Conflict: Task has been updated to version 2 by another transaction." },
+              "currentVersion": { "type": "integer", "example": 2 }
+            }
+          },
+          "requestId": { "type": "string", "format": "uuid" }
+        }
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "organization_id": { "type": "string", "format": "uuid" },
+          "project_id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string", "example": "Migrate database connection pooling" },
+          "description": { "type": "string", "example": "Optimize pool size and timeout thresholds" },
+          "status": { "type": "string", "enum": ["backlog", "todo", "in_progress", "review", "done", "cancelled"] },
+          "priority": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+          "assignee_id": { "type": "string", "format": "uuid", "nullable": true },
+          "version": { "type": "integer", "description": "Optimistic Concurrency Control version counter", "example": 1 },
+          "estimated_hours": { "type": "number", "example": 8 },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "summary": "Register new user and primary organization",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password", "firstName", "lastName"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 8 },
+                  "firstName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "organizationName": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User created and authenticated" },
+          "409": { "description": "User already exists" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Authenticate user credentials",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Authentication successful" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/organizations/{orgId}/tasks": {
+      "get": {
+        "summary": "List tasks with tenant isolation and filtering",
+        "tags": ["Tasks"],
+        "security": [{ "BearerAuth": [] }, { "TenantHeader": [] }],
+        "parameters": [
+          { "name": "orgId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "assigneeId", "in": "query", "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Filtered task list" },
+          "403": { "description": "Cross-tenant access forbidden" }
+        }
+      },
+      "post": {
+        "summary": "Create new task within tenant organization",
+        "tags": ["Tasks"],
+        "security": [{ "BearerAuth": [] }, { "TenantHeader": [] }],
+        "parameters": [
+          { "name": "orgId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "201": { "description": "Task created successfully" }
+        }
+      }
+    },
+    "/organizations/{orgId}/tasks/{taskId}": {
+      "patch": {
+        "summary": "Update task with Optimistic Concurrency Control",
+        "description": "Requires passing current `version` in the payload. If the server has a newer version, returns HTTP 409 Conflict.",
+        "tags": ["Tasks"],
+        "security": [{ "BearerAuth": [] }, { "TenantHeader": [] }],
+        "parameters": [
+          { "name": "orgId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "taskId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["version"],
+                "properties": {
+                  "version": { "type": "integer", "description": "Expected current task version" },
+                  "title": { "type": "string" },
+                  "status": { "type": "string", "enum": ["backlog", "todo", "in_progress", "review", "done", "cancelled"] },
+                  "priority": { "type": "string", "enum": ["low", "medium", "high", "critical"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Task updated and version incremented" },
+          "409": { "description": "Concurrency Conflict: Task modified by another transaction" }
+        }
+      }
+    },
+    "/webhooks/incoming": {
+      "post": {
+        "summary": "Incoming webhook receiver with HMAC signature validation and replay defense",
+        "tags": ["Webhooks"],
+        "parameters": [
+          { "name": "X-WorkSphere-Signature", "in": "header", "required": true, "schema": { "type": "string" } },
+          { "name": "X-WorkSphere-Timestamp", "in": "header", "required": true, "schema": { "type": "string" } },
+          { "name": "X-Event-Id", "in": "header", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Webhook verified and accepted" },
+          "403": { "description": "Signature mismatch or timestamp outside tolerance" }
+        }
+      }
+    }
+  }
+}

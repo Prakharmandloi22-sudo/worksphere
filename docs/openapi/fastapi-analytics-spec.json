@@ -1,0 +1,91 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "WorkSphere Analytics Service",
+    "description": "Independently deployable high-performance analytics microservice for WorkSphere.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health/live": {
+      "get": {
+        "tags": ["Health & Diagnostics"],
+        "summary": "Liveness",
+        "responses": {
+          "200": { "description": "Successful Response" }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": ["Health & Diagnostics"],
+        "summary": "Readiness",
+        "responses": {
+          "200": { "description": "Successful Response" }
+        }
+      }
+    },
+    "/api/v1/analytics/process-activity": {
+      "post": {
+        "tags": ["Analytics Service"],
+        "summary": "Process Activity Batch",
+        "security": [{ "APIKeyHeader": [] }, { "HTTPBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["organization_id", "events"],
+                "properties": {
+                  "organization_id": { "type": "string" },
+                  "events": { "type": "array", "items": { "type": "object" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Batch Processed Successfully" },
+          "401": { "description": "Unauthorized M2M Token" }
+        }
+      }
+    },
+    "/api/v1/analytics/projects/{project_id}/health": {
+      "get": {
+        "tags": ["Analytics Service"],
+        "summary": "Get Project Health",
+        "security": [{ "APIKeyHeader": [] }, { "HTTPBearer": [] }],
+        "parameters": [
+          { "name": "project_id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "total_tasks", "in": "query", "schema": { "type": "integer", "default": 20 } },
+          { "name": "completed_tasks", "in": "query", "schema": { "type": "integer", "default": 12 } },
+          { "name": "overdue_tasks", "in": "query", "schema": { "type": "integer", "default": 2 } }
+        ],
+        "responses": {
+          "200": { "description": "Health Score & Forecast Response" },
+          "401": { "description": "Unauthorized M2M Token" }
+        }
+      }
+    },
+    "/api/v1/analytics/organizations/{organization_id}/workload": {
+      "get": {
+        "tags": ["Analytics Service"],
+        "summary": "Get Organization Workload",
+        "security": [{ "APIKeyHeader": [] }, { "HTTPBearer": [] }],
+        "parameters": [
+          { "name": "organization_id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Capacity and Overload Summary" },
+          "401": { "description": "Unauthorized M2M Token" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "APIKeyHeader": { "type": "apiKey", "in": "header", "name": "X-API-Key" },
+      "HTTPBearer": { "type": "http", "scheme": "bearer" }
+    }
+  }
+}

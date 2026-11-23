@@ -1,0 +1,222 @@
+{
+  "info": {
+    "name": "WorkSphere Multi-Tenant API Collection",
+    "_postman_id": "worksphere-collection-v1",
+    "description": "Comprehensive Postman collection for WorkSphere multi-tenant platform, including Auth, RBAC, Tasks with Optimistic Concurrency Control, and FastAPI Analytics.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Authentication",
+      "item": [
+        {
+          "name": "Register User & Primary Org",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success) {",
+                  "    pm.environment.set('token', jsonData.data.tokens.accessToken);",
+                  "    pm.environment.set('refreshToken', jsonData.data.tokens.refreshToken);",
+                  "    pm.environment.set('orgId', jsonData.data.organization.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@acme.com\",\n  \"password\": \"SecurePass123!\",\n  \"firstName\": \"Alex\",\n  \"lastName\": \"Vance\",\n  \"organizationName\": \"Acme Global\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "register"] }
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success) {",
+                  "    pm.environment.set('token', jsonData.data.tokens.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@acme.com\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Profile & Memberships",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Organizations & Projects",
+      "item": [
+        {
+          "name": "List User Organizations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/organizations", "host": ["{{baseUrl}}"], "path": ["api", "v1", "organizations"] }
+          }
+        },
+        {
+          "name": "Create Project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success) {",
+                  "    pm.environment.set('projectId', jsonData.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Core Infrastructure Modernization\",\n  \"key\": \"INFRA\",\n  \"description\": \"Migrating compute to containerized multi-tenant topology\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/organizations/{{orgId}}/projects", "host": ["{{baseUrl}}"], "path": ["api", "v1", "organizations", "{{orgId}}", "projects"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Tasks & Concurrency Control (Assessment 15)",
+      "item": [
+        {
+          "name": "Create Task (Initial Version = 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success) {",
+                  "    pm.environment.set('taskId', jsonData.data.id);",
+                  "    pm.environment.set('taskVersion', jsonData.data.version);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectId\": \"{{projectId}}\",\n  \"title\": \"Implement Optimistic Concurrency Control\",\n  \"status\": \"todo\",\n  \"priority\": \"high\",\n  \"estimatedHours\": 12\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/organizations/{{orgId}}/tasks", "host": ["{{baseUrl}}"], "path": ["api", "v1", "organizations", "{{orgId}}", "tasks"] }
+          }
+        },
+        {
+          "name": "Update Task - Success (Version 1 -> 2)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": 1,\n  \"status\": \"in_progress\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/organizations/{{orgId}}/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["api", "v1", "organizations", "{{orgId}}", "tasks", "{{taskId}}"] }
+          }
+        },
+        {
+          "name": "Update Task - Conflict (Passing Stale Version 1 -> Expect 409)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": 1,\n  \"priority\": \"critical\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/organizations/{{orgId}}/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["api", "v1", "organizations", "{{orgId}}", "tasks", "{{taskId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Analytics Microservice",
+      "item": [
+        {
+          "name": "FastAPI Service Liveness",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{analyticsUrl}}/health/live", "host": ["{{analyticsUrl}}"], "path": ["health", "live"] }
+          }
+        },
+        {
+          "name": "Get Project Health Metrics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-API-Key", "value": "{{m2mApiKey}}" }],
+            "url": { "raw": "{{analyticsUrl}}/api/v1/analytics/projects/proj-101/health?total_tasks=30&completed_tasks=24&overdue_tasks=1", "host": ["{{analyticsUrl}}"], "path": ["api", "v1", "analytics", "projects", "proj-101", "health"] }
+          }
+        },
+        {
+          "name": "Get Team Workload Distribution",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-API-Key", "value": "{{m2mApiKey}}" }],
+            "url": { "raw": "{{analyticsUrl}}/api/v1/analytics/organizations/{{orgId}}/workload", "host": ["{{analyticsUrl}}"], "path": ["api", "v1", "analytics", "organizations", "{{orgId}}", "workload"] }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "analyticsUrl", "value": "http://localhost:8000" },
+    { "key": "m2mApiKey", "value": "m2m-service-token-worksphere-analytics-2026" },
+    { "key": "token", "value": "" },
+    { "key": "orgId", "value": "" },
+    { "key": "projectId", "value": "" },
+    { "key": "taskId", "value": "" },
+    { "key": "taskVersion", "value": "1" }
+  ]
+}

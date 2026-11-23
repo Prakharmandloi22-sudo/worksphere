@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL System of Record (Assessment 03)
+  postgres:
+    image: postgres:16-alpine
+    container_name: worksphere-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-worksphere_db}
+      POSTGRES_USER: ${DB_USER:-worksphere}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-worksphere_secret}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./services/core-api/src/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - worksphere_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-worksphere} -d ${DB_NAME:-worksphere_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Redis Cache and BullMQ Job Queue (Assessment 07)
+  redis:
+    image: redis:7-alpine
+    container_name: worksphere-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - worksphere_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 3. Core Node.js / Express Business API (Assessment 02 & 04)
+  core-api:
+    build:
+      context: ./services/core-api
+      dockerfile: Dockerfile
+    container_name: worksphere-core-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgres://${DB_USER:-worksphere}:${DB_PASSWORD:-worksphere_secret}@postgres:5432/${DB_NAME:-worksphere_db}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-worksphere-super-secure-jwt-key-2026-production-testing-token}
+      ANALYTICS_SERVICE_URL: http://analytics-service:8000
+      ANALYTICS_SERVICE_API_KEY: ${ANALYTICS_SERVICE_API_KEY:-m2m-service-token-worksphere-analytics-2026}
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - worksphere_net
+
+  # 4. FastAPI Analytics Microservice (Assessment 06)
+  analytics-service:
+    build:
+      context: ./services/analytics-service
+      dockerfile: Dockerfile
+    container_name: worksphere-analytics
+    restart: unless-stopped
+    environment:
+      ENV: production
+      PORT: 8000
+      ANALYTICS_SERVICE_API_KEY: ${ANALYTICS_SERVICE_API_KEY:-m2m-service-token-worksphere-analytics-2026}
+    ports:
+      - "8000:8000"
+    networks:
+      - worksphere_net
+
+  # 5. Next.js Frontend Application (Assessment 01)
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile
+    container_name: worksphere-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+      NEXT_PUBLIC_ANALYTICS_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - core-api
+    networks:
+      - worksphere_net
+
+  # 6. Production Nginx Reverse Proxy (Assessment 14)
+  nginx:
+    image: nginx:alpine
+    container_name: worksphere-nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - frontend
+      - core-api
+      - analytics-service
+    networks:
+      - worksphere_net
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  worksphere_net:
+    driver: bridge
