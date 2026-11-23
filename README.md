@@ -1,6 +1,8 @@
 # WorkSphere: Multi-Tenant Project Management & Workflow Automation Platform
 
-> **Version 1.0** | Advanced Engineering Capstone Platform | Prepared for Orion LMS Assessment
+> **Version 1.0** | Advanced Engineering Capstone Platform | Prepared for Orion LMS Assessment  
+> **GitHub Repository**: [https://github.com/Prakharmandloi22-sudo/worksphere](https://github.com/Prakharmandloi22-sudo/worksphere)  
+> **CI/CD Status**: [![WorkSphere CI Pipeline](https://github.com/Prakharmandloi22-sudo/worksphere/actions/workflows/ci.yml/badge.svg)](https://github.com/Prakharmandloi22-sudo/worksphere/actions/workflows/ci.yml)
 
 WorkSphere is a high-performance, multi-tenant SaaS platform built for organizations to plan projects, assign tasks, collaborate in real-time, automate workflows, and analyze team productivity. The platform guarantees strict tenant data isolation, optimistic concurrency control for concurrent edits, event-driven background processing, and streaming analytics.
 
